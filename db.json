@@ -1,0 +1,19 @@
+{
+  "books": [
+    {
+      "id": "1",
+      "title": "Python Basics",
+      "author": "John",
+      "isbn": "111",
+      "status": "Available"
+    },
+    {
+      "id": "2",
+      "title": "AI Fundamentals",
+      "author": "David",
+      "isbn": "222",
+      "status": "Available"
+    }
+  ],
+  "requests": []
+}
