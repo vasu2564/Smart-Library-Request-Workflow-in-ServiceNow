@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Library Workflow</title>
+
+<style>
+    body {
+        font-family: Arial;
+        margin: 20px;
+        background-color: #f4f6f9;
+    }
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    table, th, td {
+        border: 1px solid #ccc;
+    }
+    th, td {
+        padding: 10px;
+    }
+    button {
+        padding: 6px 10px;
+        margin: 3px;
+        cursor: pointer;
+        background: #3498db;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+
+    /* ✅ Status Colors */
+    .available { color: green; font-weight: bold; }
+    .issued { color: orange; font-weight: bold; }
+    .returned { color: blue; font-weight: bold; }
+    .lost { color: red; font-weight: bold; }
+
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h1>📚 Smart Library Workflow</h1>
+
+<!-- Book Table -->
+<h2>📖 Books</h2>
+<table id="bookTable"></table>
+
+<!-- Request -->
+<h2>📝 Borrow Request</h2>
+<input type="text" id="user" placeholder="Enter student name">
+<select id="bookSelect"></select>
+<button onclick="requestBook()">Request</button>
+
+<!-- Requests -->
+<h2>📋 Requests</h2>
+<table id="requestTable"></table>
+
+<!-- Report -->
+<h2>📊 Most Borrowed Books</h2>
+<ul id="report"></ul>
+
+</div>
+
+<script>
+let books = [
+    { title: "Introduction to Java Programming", author: "Herbert Schildt", isbn: "9780071809252", status: "Available", count: 5 },
+    { title: "Data Structures and Algorithmss", author: "Thomas H. Cormen", isbn: "9780262033848", status: "Available", count: 8 },
+    { title: "Computer Networks", author: "Andrew S. Tanenbaum", isbn: "9780132126953", status: "Available", count: 6 },
+    { title: "Cyber Security Essentials", author: " Charles J. Brooks", isbn: "9781119362395", status: "Available", count: 7 },
+    { title: "Artificial Intelligence Basics", author: "Tom Taulli", isbn: "9781484250273", status: "Available", count: 9 }
+];
+
+let requests = [];
+
+// Load Books
+function loadBooks() {
+    let table = document.getElementById("bookTable");
+
+    table.innerHTML = `
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>ISBN</th>
+        <th>Status</th>
+    </tr>`;
+
+    let select = document.getElementById("bookSelect");
+    select.innerHTML = "";
+
+    books.forEach((b, i) => {
+
+        let statusClass = b.status.toLowerCase();
+
+        table.innerHTML += `
+        <tr>
+            <td>${b.title}</td>
+            <td>${b.author}</td>
+            <td>${b.isbn}</td>
+            <td class="${statusClass}">${b.status}</td>
+        </tr>`;
+
+        if (b.status === "Available") {
+            select.innerHTML += `<option value="${i}">${b.title}</option>`;
+        }
+    });
+}
+
+// Request Book
+function requestBook() {
+    let user = document.getElementById("user").value;
+    let bookIndex = document.getElementById("bookSelect").value;
+
+    if (!user) {
+        alert("Enter name");
+        return;
+    }
+
+    requests.push({
+        user: user,
+        bookIndex: bookIndex,
+        status: "Requested"
+    });
+
+    loadRequests();
+}
+
+// Load Requests
+function loadRequests() {
+    let table = document.getElementById("requestTable");
+
+    table.innerHTML = `
+    <tr>
+        <th>User</th>
+        <th>Book</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>`;
+
+    requests.forEach((r, i) => {
+        let actions = "";
+
+        if (r.status === "Requested") {
+            actions = `
+                <button onclick="approve(${i})">Approve</button>
+                <button onclick="reject(${i})">Reject</button>
+            `;
+        }
+
+        if (r.status === "Approved") {
+            actions = `<button onclick="returnBook(${i})">Return Book</button>`;
+        }
+
+        table.innerHTML += `
+        <tr>
+            <td>${r.user}</td>
+            <td>${books[r.bookIndex].title}</td>
+            <td>${r.status}</td>
+            <td>${actions}</td>
+        </tr>`;
+    });
+
+    generateReport();
+}
+
+// Approve
+function approve(i) {
+    requests[i].status = "Approved";
+
+    let book = books[requests[i].bookIndex];
+    book.status = "Issued";
+    book.count++;
+
+    loadBooks();
+    loadRequests();
+}
+
+// Reject
+function reject(i) {
+    requests[i].status = "Rejected";
+    loadRequests();
+}
+
+// Return Book
+function returnBook(i) {
+    requests[i].status = "Returned";
+
+    let book = books[requests[i].bookIndex];
+    book.status = "Available";
+
+    loadBooks();
+    loadRequests();
+}
+
+// Report
+function generateReport() {
+    let report = document.getElementById("report");
+    report.innerHTML = "";
+
+    let sorted = [...books].sort((a,b)=>b.count-a.count);
+
+    sorted.slice(0,5).forEach(b=>{
+        report.innerHTML += `<li>${b.title} - ${b.count} times</li>`;
+    });
+}
+
+// Init
+loadBooks();
+</script>
+
+</body>
+</html>
